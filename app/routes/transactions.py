@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.models.transactions import TransactionsModel
+from datetime import datetime
 
 transactions_bp = Blueprint("transactions", __name__)
 
@@ -26,15 +27,18 @@ def add_transaction():
     amount = data.get("amount")
     vat = data.get("vat")
     method = data.get("method")
-    date_str = data.get("date")  # Date as string
+    date_str = data.get("date")
 
     if not user_id or not type or not amount or not vat or not method or not date_str:
         return jsonify({"error": "Missing required fields"}), 400
 
-   
-    transaction = TransactionsModel.add_transaction(user_id, type, amount, vat, method, date_str)
-    
-   
+    try:
+        date = datetime.strptime(date_str, "%d %B %Y")
+    except ValueError:
+        return jsonify({"error": "Invalid date format, expected 'dd Month yyyy'"}), 400
+
+    transaction = TransactionsModel.add_transaction(user_id, type, amount, vat, method, date)
+
     if "error" in transaction:
         return jsonify(transaction), 400
 
