@@ -26,7 +26,9 @@ class TransactionsModel:
             except ValueError:
                 return {"error": "Invalid date format, should be 'DD Month YYYY'"}, 400
 
-        created_at = datetime.now()
+        # Convert datetime objects to ISO 8601 format strings for compatibility with JSON
+        date_str_iso = date.isoformat()
+        created_at = datetime.now().isoformat()
 
         data = {
             "user_id": user_id,
@@ -34,9 +36,9 @@ class TransactionsModel:
             "amount": amount,
             "vat": vat,
             "method": method,
-            "date": date,  
+            "date": date_str_iso,  
             "created_at": created_at  
         }
 
         response = supabase.table("transactions").insert(data).execute()
-        return response.data 
+        return response.data
