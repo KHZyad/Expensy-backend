@@ -1,23 +1,44 @@
 from flask import Blueprint, request, jsonify
 from app.models.transactions import TransactionsModel
-from datetime import datetime
 
-transactions_bp = Blueprint("transactions", __name__)
+# Initialize the Blueprint for transaction-related routes
+transactions_bp = Blueprint('transactions', __name__)
 
 @transactions_bp.route("/", methods=["GET"])
 def get_transactions():
     user_id = request.headers.get("user_id")
-    return jsonify(TransactionsModel.get_all(user_id)), 200
+    
+    # Handle missing user_id in headers
+    if not user_id:
+        return jsonify({"error": "Missing 'user_id' in headers"}), 400
+
+    # Retrieve all transactions for the user
+    transactions = TransactionsModel.get_all(user_id)
+    return jsonify(transactions), 200
 
 @transactions_bp.route("/expenses", methods=["GET"])
 def get_expenses():
     user_id = request.headers.get("user_id")
-    return jsonify(TransactionsModel.get_expenses(user_id)), 200
+    
+    # Handle missing user_id in headers
+    if not user_id:
+        return jsonify({"error": "Missing 'user_id' in headers"}), 400
+
+    # Retrieve all expenses for the user
+    expenses = TransactionsModel.get_expenses(user_id)
+    return jsonify(expenses), 200
 
 @transactions_bp.route("/incomes", methods=["GET"])
 def get_incomes():
     user_id = request.headers.get("user_id")
-    return jsonify(TransactionsModel.get_incomes(user_id)), 200
+    
+    # Handle missing user_id in headers
+    if not user_id:
+        return jsonify({"error": "Missing 'user_id' in headers"}), 400
+
+    # Retrieve all incomes for the user
+    incomes = TransactionsModel.get_incomes(user_id)
+    return jsonify(incomes), 200
 
 @transactions_bp.route("/add", methods=["POST"])
 def add_transaction():
@@ -27,18 +48,16 @@ def add_transaction():
     amount = data.get("amount")
     vat = data.get("vat")
     method = data.get("method")
-    date_str = data.get("date")
+    date_str = data.get("date")  # Date as string
 
-    if not user_id or not type or not amount or not vat or not method or not date_str:
+    # Validate that required fields are provided
+    if not all([user_id, type, amount, vat, method, date_str]):
         return jsonify({"error": "Missing required fields"}), 400
 
-    try:
-        date = datetime.strptime(date_str, "%d %B %Y")
-    except ValueError:
-        return jsonify({"error": "Invalid date format, expected 'dd Month yyyy'"}), 400
+    # Add the transaction to the database
+    transaction = TransactionsModel.add_transaction(user_id, type, amount, vat, method, date_str)
 
-    transaction = TransactionsModel.add_transaction(user_id, type, amount, vat, method, date)
-
+    # Handle possible errors from the add_transaction method
     if "error" in transaction:
         return jsonify(transaction), 400
 

@@ -16,26 +16,27 @@ class TransactionsModel:
 
     @staticmethod
     def add_transaction(user_id, type, amount, vat, method, date_str):
-        # Convert the string 'date_str' to a datetime object
-        try:
-            date = datetime.strptime(date_str, '%d %B %Y')  # Example: '13 September 2023'
-        except ValueError:
-            return {"error": "Invalid date format, should be 'DD Month YYYY'"}, 400
-        
-        # Get the current timestamp for the creation date
+        # Check if date_str is already a datetime object
+        if isinstance(date_str, datetime):
+            date = date_str  # If it's already a datetime object, use it directly
+        else:
+            # Otherwise, try to convert it from a string
+            try:
+                date = datetime.strptime(date_str, '%d %B %Y')  # Example: '13 September 2023'
+            except ValueError:
+                return {"error": "Invalid date format, should be 'DD Month YYYY'"}, 400
+
         created_at = datetime.now()
 
-        # Data to be inserted into the table
         data = {
             "user_id": user_id,
             "type": type,
             "amount": amount,
             "vat": vat,
             "method": method,
-            "date": date,  # Store as a datetime object
-            "created_at": created_at  # Store the creation date
+            "date": date,  
+            "created_at": created_at  
         }
 
-        # Insert the data into the 'transactions' table
         response = supabase.table("transactions").insert(data).execute()
-        return response.data  # Return the inserted data
+        return response.data 
