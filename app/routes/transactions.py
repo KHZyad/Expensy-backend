@@ -24,8 +24,18 @@ def add_transaction():
     user_id = data.get("user_id")
     type = data.get("type")
     amount = data.get("amount")
+    vat = data.get("vat")
+    method = data.get("method")
+    date_str = data.get("date")  # Date as string
 
-    if not user_id or not type or not amount:
+    if not user_id or not type or not amount or not vat or not method or not date_str:
         return jsonify({"error": "Missing required fields"}), 400
 
-    return jsonify(TransactionsModel.add_transaction(user_id, type, amount)), 201
+   
+    transaction = TransactionsModel.add_transaction(user_id, type, amount, vat, method, date_str)
+    
+   
+    if "error" in transaction:
+        return jsonify(transaction), 400
+
+    return jsonify(transaction), 201
