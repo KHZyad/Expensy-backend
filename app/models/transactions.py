@@ -26,17 +26,25 @@ class TransactionsModel:
             except ValueError:
                 return {"error": "Invalid date format, should be 'DD Month YYYY'"}, 400
 
-        # Convert datetime objects to ISO 8601 format strings for compatibility with JSON
-        date_str_iso = date.isoformat()
-        created_at = datetime.now().isoformat()
+        # Set VAT value to 0
+        vat = 0
+
+        # Convert amount to numeric value
+        try:
+            amount = float(amount)
+        except ValueError as e:
+            print(f"Error converting amount: {e}")
+            return {"error": "Invalid amount value"}, 400
+
+        created_at = datetime.now()
 
         data = {
             "user_id": user_id,
             "type": type,
             "amount": amount,
-            "vat": vat,
+            "vat": vat,  # VAT is now always 0
             "method": method,
-            "date": date_str_iso,  
+            "date": date,  
             "created_at": created_at  
         }
 
